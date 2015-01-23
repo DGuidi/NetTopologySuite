@@ -47,10 +47,13 @@ namespace NetTopologySuite.IO
                 throw new ArgumentNullException("factory");
             if (encoding == null) 
                 throw new ArgumentNullException("encoding");
+
+            _encoding = encoding;
+
             _open = true;
 
             string dbfFile = Path.ChangeExtension(filename, "dbf");
-            _dbfReader = new DbaseFileReader(dbfFile, _encoding);
+            _dbfReader = new DbaseFileReader(dbfFile, encoding);
             string shpFile = Path.ChangeExtension(filename, "shp");
             _shpReader = new ShapefileReader(shpFile, factory);
 
@@ -66,9 +69,7 @@ namespace NetTopologySuite.IO
             _shpHeader = _shpReader.Header;
             _dbfEnumerator = _dbfReader.GetEnumerator();
             _shpEnumerator = _shpReader.GetEnumerator();
-            _moreRecords = true;
-
-            _encoding = encoding;
+            _moreRecords = true;           
         }
 
         bool _moreRecords = false;

@@ -14,11 +14,14 @@ namespace NetTopologySuite.IO
             /// Initializes a new instance of the <see cref="DbaseFileEnumerator"/> class.
             /// </summary>
             /// <param name="parent"></param>
-            public DbaseFileEnumerator(DbaseFileReader parent)
+            public DbaseFileEnumerator(DbaseFileReader parent) : this(parent._encoding)
             {
+                if (parent == null) 
+                    throw new ArgumentNullException("parent");
+
                 _parent = parent;
                 FileStream stream = new FileStream(parent._filename, FileMode.Open, FileAccess.Read, FileShare.Read);
-                _dbfStream = new BinaryReader(stream, parent._header.Encoding);
+                _dbfStream = new BinaryReader(stream, _encoding);
                 ReadHeader();
             }
 

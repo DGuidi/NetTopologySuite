@@ -1,20 +1,23 @@
 ﻿using System;
 using DotSpatial.Projections;
+using GeoAPI.CoordinateSystems;
 using GeoAPI.CoordinateSystems.Transformations;
-using NetTopologySuite.Tests.NUnit.Operation.Valid;
+using GeoAPI.Geometries;
+using NetTopologySuite.Algorithm.Distance;
+using NetTopologySuite.CoordinateSystems.Transformation.DotSpatial.Projections;
+using NetTopologySuite.CoordinateSystems.Transformations;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
+using NetTopologySuite.Samples.SimpleTests;
 using NetTopologySuite.Triangulate;
 using NetTopologySuite.Triangulate.QuadEdge;
 using NUnit.Framework;
-using NetTopologySuite.CoordinateSystems.Transformation.DotSpatial.Projections;
+using ProjNet.Converters.WellKnownText;
+using ProjNet.CoordinateSystems;
+using ProjNet.CoordinateSystems.Transformations;
 
 namespace NetTopologySuite.Tests.Various
 {
-    using Geometries;
-    using Samples.SimpleTests;
-    using NetTopologySuite.IO;
-    using GeoAPI.Geometries;
-
-
     [TestFixture]
     public class GoogleGroupTests : BaseSamples
     {
@@ -397,10 +400,10 @@ namespace NetTopologySuite.Tests.Various
             // SRID 4326
             const string coordSys4326 = "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]";
 
-            var csSource = ProjNet.Converters.WellKnownText.CoordinateSystemWktReader.Parse(coordSysRGF93_Lambert_93) as GeoAPI.CoordinateSystems.ICoordinateSystem;
-            var csTarget = ProjNet.Converters.WellKnownText.CoordinateSystemWktReader.Parse(coordSys4326) as GeoAPI.CoordinateSystems.ICoordinateSystem;
+            var csSource = CoordinateSystemWktReader.Parse(coordSysRGF93_Lambert_93) as ICoordinateSystem;
+            var csTarget = CoordinateSystemWktReader.Parse(coordSys4326) as ICoordinateSystem;
 
-            var transform = new ProjNet.CoordinateSystems.Transformations.CoordinateTransformationFactory().CreateFromCoordinateSystems(csSource, csTarget);
+            var transform = new CoordinateTransformationFactory().CreateFromCoordinateSystems(csSource, csTarget);
 
             var piSource = ProjectionInfo.FromEsriString(coordSysRGF93_Lambert_93);
             var piTarget = ProjectionInfo.FromEsriString(coordSys4326);
@@ -413,19 +416,19 @@ namespace NetTopologySuite.Tests.Various
                 while (shapeDataReader.Read())
                 {
                     var outGeomDotSpatial =
-                        CoordinateSystems.Transformations.GeometryTransform.TransformGeometry(GeometryFactory.Default,
+                        GeometryTransform.TransformGeometry(GeometryFactory.Default,
                                                                                               shapeDataReader.Geometry,
                                                                                               dsTransform);
                     Assert.IsFalse(outGeomDotSpatial.IsEmpty);
                     Console.WriteLine(outGeomDotSpatial.AsText());
                     var outGeomProjNet =
-                        CoordinateSystems.Transformations.GeometryTransform.TransformGeometry(GeometryFactory.Default,
+                        GeometryTransform.TransformGeometry(GeometryFactory.Default,
                                                                                               shapeDataReader.Geometry,
                                                                                               transform.MathTransform);
                     Assert.IsFalse(outGeomProjNet.IsEmpty);
                     Console.WriteLine(outGeomProjNet.AsText());
 
-                    var hd = Algorithm.Distance.DiscreteHausdorffDistance.Distance(outGeomProjNet, outGeomDotSpatial);
+                    var hd = DiscreteHausdorffDistance.Distance(outGeomProjNet, outGeomDotSpatial);
                     Console.WriteLine(string.Format("\nHaussdorffDistance: {0}", hd));
                     Console.WriteLine();
                 }
@@ -445,15 +448,15 @@ namespace NetTopologySuite.Tests.Various
         [Test]
         public void CanTransformPolygon()
         {
-            ICoordinateTransformation transform = new ProjNet.CoordinateSystems.Transformations.CoordinateTransformationFactory()
+            ICoordinateTransformation transform = new CoordinateTransformationFactory()
                 .CreateFromCoordinateSystems(
-                    ProjNet.CoordinateSystems.GeographicCoordinateSystem.WGS84,
-                    ProjNet.CoordinateSystems.GeographicCoordinateSystem.WGS84);
+                    GeographicCoordinateSystem.WGS84,
+                    GeographicCoordinateSystem.WGS84);
 
             IGeometry original = new Polygon(new LinearRing(new Coordinate[]{
                 new Coordinate(-77.5, 38.5),new Coordinate(-77.1, 38.5),new Coordinate(-77.1, 38.1),new Coordinate(-77.5, 38.5)}));
 
-            IGeometry transformed = NetTopologySuite.CoordinateSystems.Transformations.GeometryTransform.TransformGeometry(
+            IGeometry transformed = GeometryTransform.TransformGeometry(
                     GeometryFactory.Default, original, transform.MathTransform);
 
             Assert.NotNull(transformed);
