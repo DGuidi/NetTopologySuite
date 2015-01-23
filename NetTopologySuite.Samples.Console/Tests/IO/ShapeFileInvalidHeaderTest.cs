@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using NetTopologySuite.IO;
 using NUnit.Framework;
 
 namespace NetTopologySuite.Tests.IO
@@ -18,7 +19,7 @@ namespace NetTopologySuite.Tests.IO
             var g = s.ReadAll();
             */
             var dbf = Path.ChangeExtension(_invalidPath, ".dbf");
-            var d = new NetTopologySuite.IO.DbaseFileReader(dbf);
+            var d = new NetTopologySuite.IO.DbaseFileReader(dbf, Shapefile.DefaultEncoding);
 
             var de = d.GetEnumerator();
             Assert.IsNull(de.Current);

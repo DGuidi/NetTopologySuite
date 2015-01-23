@@ -38,7 +38,7 @@ namespace NetTopologySuite.Samples.Tests.Operation.IO
                 File.Delete(emptyDbf);
 
             ShapefileDataWriter writer = new ShapefileDataWriter(filename, Factory);
-            writer.Header = new DbaseFileHeader();
+            writer.Header = new DbaseFileHeader(writer.Encoding);
             writer.Write(new IFeature[0]);
 
             Assert.That(File.Exists(emptyShp), Is.True);

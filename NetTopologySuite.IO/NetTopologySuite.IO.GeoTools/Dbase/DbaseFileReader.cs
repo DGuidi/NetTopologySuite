@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.IO;
+using System.Text;
 
 namespace NetTopologySuite.IO
 {
@@ -15,6 +16,7 @@ namespace NetTopologySuite.IO
         /// </summary>
         private partial class DbaseFileEnumerator : IEnumerator, IDisposable
         {
+            private readonly Encoding _encoding;
             DbaseFileReader _parent;
             ArrayList _arrayList;
             int _iCurrentRecord = 0;
@@ -23,8 +25,13 @@ namespace NetTopologySuite.IO
             private DbaseFileHeader _header = null;
             protected string[] _fieldNames = null;
 
+            public DbaseFileEnumerator(Encoding encoding)
+            {
+                if (encoding == null) 
+                    throw new ArgumentNullException("encoding");
 
-            #region Implementation of IEnumerator
+                _encoding = encoding;
+            }
 
             /// <summary>
             /// Sets the enumerator to its initial position, which is 
@@ -55,12 +62,7 @@ namespace NetTopologySuite.IO
                 _iCurrentRecord++;
                 if (_iCurrentRecord <= _header.NumRecords)
                     _arrayList = this.Read();
-                bool more = true;
-                if (_iCurrentRecord > _header.NumRecords)
-                {
-                    //this._dbfStream.Close();			
-                    more = false;
-                }
+                bool more = _iCurrentRecord <= _header.NumRecords;
                 return more;
             }
 
@@ -75,10 +77,7 @@ namespace NetTopologySuite.IO
             /// </exception>
             public object Current
             {
-                get
-                {
-                    return _arrayList;
-                }
+                get { return _arrayList; }
             }
 
             /// <summary>
@@ -86,7 +85,7 @@ namespace NetTopologySuite.IO
             /// </summary>
             protected void ReadHeader()
             {
-                _header = new DbaseFileHeader();
+                _header = new DbaseFileHeader(_encoding);
                 // read the header
                 _header.ReadHeader(_dbfStream, _parent._filename);
 
@@ -221,28 +220,12 @@ namespace NetTopologySuite.IO
                 }
                 return attrs;
             }
-
-            #endregion
         }
            
         
 
-        private DbaseFileHeader _header = null;
-        private string _filename;
-
-        #region Constructors
-
-
-
-        #endregion
-
-        #region Methods
-
-       
-
-        #endregion
-
-        #region Implementation of IEnumerable
+        private DbaseFileHeader _header;
+        private readonly string _filename;
 
         /// <summary>
         /// Gets the object that allows iterating through the members of the collection.
@@ -254,7 +237,5 @@ namespace NetTopologySuite.IO
         {
             return new DbaseFileEnumerator(this);
         }
-
-        #endregion
     }
 }

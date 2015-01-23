@@ -24,22 +24,15 @@ namespace NetTopologySuite.IO
         /// <summary>
         /// Initializes a new instance of the DbaseFileWriter class.
         /// </summary>
-        public DbaseFileWriter(string filename) :  this(filename, 
-            Encoding.GetEncoding(1252)
-        ) { }
-
-        /// <summary>
-        /// Initializes a new instance of the DbaseFileWriter class.
-        /// </summary>
-        public DbaseFileWriter(string filename, Encoding enc)
+        public DbaseFileWriter(string filename, Encoding encoding)
         {
             if (filename == null)
                 throw new ArgumentNullException("filename");
-            if (enc == null) 
-                throw new ArgumentNullException("enc");
+            if (encoding == null) 
+                throw new ArgumentNullException("encoding");
 
             var filestream = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.Write);
-            _encoding = enc;
+            _encoding = encoding;
             _writer = new BinaryWriter(filestream, _encoding);
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Handlers;
@@ -253,10 +254,11 @@ namespace NetTopologySuite.IO
 		public static void WriteDummyDbf(string filename, int recordCount)
         {
             filename = Path.ChangeExtension(filename, "dbf");
-            var dbfHeader = new DbaseFileHeader {NumRecords = recordCount};
+            var encoding = Shapefile.DefaultEncoding;
+            var dbfHeader = new DbaseFileHeader(encoding) { NumRecords = recordCount };
             dbfHeader.AddColumn("Description",'C', 20, 0);
-			
-			var dbfWriter = new DbaseFileWriter(filename);
+            
+            var dbfWriter = new DbaseFileWriter(filename, encoding);
 			dbfWriter.Write(dbfHeader);
 			for (var i = 0; i < recordCount; i++)
 			{

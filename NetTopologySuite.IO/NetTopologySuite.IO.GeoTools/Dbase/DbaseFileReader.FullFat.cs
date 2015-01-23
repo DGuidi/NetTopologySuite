@@ -1,10 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace NetTopologySuite.IO
 {
     public partial class DbaseFileReader
     {
+        private readonly Encoding _encoding;
+
         private partial class DbaseFileEnumerator
         {
             /// <summary>
@@ -32,13 +35,12 @@ namespace NetTopologySuite.IO
         /// <summary>
         /// Initializes a new instance of the DbaseFileReader class.
         /// </summary>
-        /// <param name="filename"></param>
-        public DbaseFileReader(string filename)
+        public DbaseFileReader(string filename, Encoding encoding)
         {
             if (filename == null)
-            {
-                throw new ArgumentNullException(filename);
-            }
+                throw new ArgumentNullException("filename");
+            if (encoding == null)
+                throw new ArgumentNullException("encoding");
             // check for the file existing here, otherwise we will not get an error
             //until we read the first record or read the header.
             if (!File.Exists(filename))
@@ -46,7 +48,7 @@ namespace NetTopologySuite.IO
                 throw new FileNotFoundException(String.Format("Could not find file \"{0}\"", filename));
             }
             _filename = filename;
-
+            _encoding = encoding;
         }
 
 
@@ -61,7 +63,7 @@ namespace NetTopologySuite.IO
                 FileStream stream = new FileStream(_filename, FileMode.Open, FileAccess.Read);
                 BinaryReader dbfStream = new BinaryReader(stream);
 
-                _header = new DbaseFileHeader();
+                _header = new DbaseFileHeader(_encoding);
                 // read the header
                 _header.ReadHeader(dbfStream, _filename);
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Text;
 using GeoAPI.Geometries;
 
 namespace NetTopologySuite.IO
@@ -13,6 +14,7 @@ namespace NetTopologySuite.IO
     /// </remarks>
     public partial class ShapefileDataReader : IDisposable
     {
+        private readonly Encoding _encoding;
         bool _open = false;
         readonly DbaseFieldDescriptor[] _dbaseFields;
         readonly DbaseFileReader _dbfReader;
@@ -23,24 +25,34 @@ namespace NetTopologySuite.IO
         readonly DbaseFileHeader _dbfHeader;
         readonly int _recordCount = 0;
 
+        /// <summary>
+        /// Initializes a new instance of the ShapefileDataReader class.
+        /// </summary>
+        /// <param name="filename">Path to shapefile to read, without ".shp" extension.</param>
+        /// <param name="factory">The <see cref="IGeometryFactory"/> to use.</param>        
+        public ShapefileDataReader(string filename, IGeometryFactory factory) :
+            this(filename, factory, Shapefile.DefaultEncoding) { }
 
         /// <summary>
         /// Initializes a new instance of the ShapefileDataReader class.
         /// </summary>
-        /// <param name="filename">The shapefile to read (minus the .shp extension)</param>
-        ///<param name="geometryFactory">The GeometryFactory to use.</param>
-        public ShapefileDataReader(string filename, IGeometryFactory geometryFactory)
+        /// <param name="filename">Path to shapefile to read, without ".shp" extension.</param>
+        /// <param name="factory">The <see cref="IGeometryFactory"/> to use.</param>
+        /// <param name="encoding">The <see cref="Encoding"/> to use.</param>
+        public ShapefileDataReader(string filename, IGeometryFactory factory, Encoding encoding)
         {
             if (String.IsNullOrEmpty(filename))
                 throw new ArgumentNullException("filename");
-            if (geometryFactory == null)
-                throw new ArgumentNullException("geometryFactory");
+            if (factory == null)
+                throw new ArgumentNullException("factory");
+            if (encoding == null) 
+                throw new ArgumentNullException("encoding");
             _open = true;
 
             string dbfFile = Path.ChangeExtension(filename, "dbf");
-            _dbfReader = new DbaseFileReader(dbfFile);
+            _dbfReader = new DbaseFileReader(dbfFile, _encoding);
             string shpFile = Path.ChangeExtension(filename, "shp");
-            _shpReader = new ShapefileReader(shpFile, geometryFactory);
+            _shpReader = new ShapefileReader(shpFile, factory);
 
             _dbfHeader = _dbfReader.GetHeader();
             _recordCount = _dbfHeader.NumRecords;
@@ -55,7 +67,10 @@ namespace NetTopologySuite.IO
             _dbfEnumerator = _dbfReader.GetEnumerator();
             _shpEnumerator = _shpReader.GetEnumerator();
             _moreRecords = true;
+
+            _encoding = encoding;
         }
+
         bool _moreRecords = false;
 
         IGeometry geometry = null;
@@ -84,10 +99,15 @@ namespace NetTopologySuite.IO
         /// <remarks>IsClosed and RecordsAffected are the only properties that you can call after the IDataReader is closed.</remarks>
         public bool IsClosed
         {
-            get
-            {
-                return !_open;
-            }
+            get { return !_open; }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Encoding"/>
+        /// </summary>
+        public Encoding Encoding
+        {
+            get { return _encoding; }
         }
 
         /// <summary>

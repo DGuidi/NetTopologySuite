@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using GeoAPI.Geometries;
@@ -23,41 +24,42 @@ namespace NetTopologySuite.IO.ShapeFile.Extended
         private readonly CancellationTokenSource m_CancellationTokenSrc;
 		private readonly DbaseReader m_DbfReader;
 		private readonly IGeometryFactory m_GeoFactory;
-		private readonly ShapeReader m_ShapeReader;
+	    private readonly Encoding _encoding;
+	    private readonly ShapeReader m_ShapeReader;
 
-	    public ShapeDataReader(string shapeFilePath, ISpatialIndex<ShapeLocationInFileInfo> index, IGeometryFactory geoFactory, bool buildIndexAsync)
+	    public ShapeDataReader(string shapeFilePath, ISpatialIndex<ShapeLocationInFileInfo> index, 
+            IGeometryFactory geoFactory, bool buildIndexAsync, Encoding encoding)
 		{
 			m_SpatialIndex = index;
 			m_GeoFactory = geoFactory;
+	        _encoding = encoding;
 
-			ValidateParameters(shapeFilePath);
+	        ValidateParameters(shapeFilePath);
 
 			m_ShapeReader = new ShapeReader(shapeFilePath);
 
-			if (buildIndexAsync)
-			{
-                m_CancellationTokenSrc = new CancellationTokenSource();
-                m_IndexCreationTask = Task.Factory.StartNew(FillSpatialIndex, m_CancellationTokenSrc.Token);
-			}
-			else
-			{
-				FillSpatialIndex();
-			}
+	        if (buildIndexAsync)
+	        {
+	            m_CancellationTokenSrc = new CancellationTokenSource();
+	            m_IndexCreationTask = Task.Factory.StartNew(FillSpatialIndex, m_CancellationTokenSrc.Token);
+	        }
+	        else FillSpatialIndex();
 
-			m_DbfReader = new DbaseReader(Path.ChangeExtension(shapeFilePath, DBF_EXT));			
+	        m_DbfReader = new DbaseReader(Path.ChangeExtension(shapeFilePath, DBF_EXT), _encoding);
 		}
 
-		public ShapeDataReader(string shapeFilePath, ISpatialIndex<ShapeLocationInFileInfo> index, IGeometryFactory geoFactory)
-			: this(shapeFilePath, index, geoFactory, true)
-		{ }
+		public ShapeDataReader(string shapeFilePath, ISpatialIndex<ShapeLocationInFileInfo> index, 
+            IGeometryFactory geoFactory, Encoding encoding) : 
+            this(shapeFilePath, index, geoFactory, true, encoding) { }
 
-		public ShapeDataReader(string shapeFilePath, ISpatialIndex<ShapeLocationInFileInfo> index)
-			: this(shapeFilePath, index, new GeometryFactory())
-		{ }
+		public ShapeDataReader(string shapeFilePath, ISpatialIndex<ShapeLocationInFileInfo> index, Encoding encoding) :
+            this(shapeFilePath, index, new GeometryFactory(), encoding) { }
 
-		public ShapeDataReader(string shapeFilePath)
-			: this(shapeFilePath, new STRtree<ShapeLocationInFileInfo>())
-		{ }
+		public ShapeDataReader(string shapeFilePath, Encoding encoding) :
+            this(shapeFilePath, new STRtree<ShapeLocationInFileInfo>(), encoding) { }
+
+        public ShapeDataReader(string shapeFilePath) :
+            this(shapeFilePath, Shapefile.DefaultEncoding) { }
 
 		~ShapeDataReader()
 		{

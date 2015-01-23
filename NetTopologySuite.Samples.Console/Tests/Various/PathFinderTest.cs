@@ -110,7 +110,7 @@ namespace NetTopologySuite.Tests.Various
             var feature = new Feature(path, new AttributesTable());
             feature.Attributes.AddAttribute(field1, 0);                        
 
-            var header = new DbaseFileHeader {NumRecords = 1, NumFields = 1};
+            var header = new DbaseFileHeader(Shapefile.DefaultEncoding) {NumRecords = 1, NumFields = 1};
             header.AddColumn(field1, 'N', 5, 0);
             
             var writer = new ShapefileDataWriter(shapepath, factory) {Header = header};

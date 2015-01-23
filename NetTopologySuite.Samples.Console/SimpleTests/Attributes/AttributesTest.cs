@@ -53,7 +53,7 @@ namespace NetTopologySuite.Samples.SimpleTests.Attributes
             if (!File.Exists(filename))
                 throw new FileNotFoundException(filename + " not found at " + Environment.CurrentDirectory);
 
-            var reader = new DbaseFileReader(filename);
+            var reader = new DbaseFileReader(filename, Shapefile.DefaultEncoding);
             var header = reader.GetHeader();
             Console.WriteLine("HeaderLength: " + header.HeaderLength);
             Console.WriteLine("RecordLength: " + header.RecordLength);

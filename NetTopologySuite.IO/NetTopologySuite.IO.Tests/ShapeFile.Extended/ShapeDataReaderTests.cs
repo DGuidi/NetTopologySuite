@@ -121,7 +121,11 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 			};
 
             // Act.
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path, new STRtree<ShapeLocationInFileInfo>(), new GeometryFactory(), true);
+            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path, 
+                new STRtree<ShapeLocationInFileInfo>(), 
+                GeometryFactory.Default, 
+                true, 
+                Shapefile.DefaultEncoding);
 
             // Assert.
             Assert.IsNotNull(m_shapeDataReader);
@@ -138,7 +142,11 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 			};
 
             // Act.
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path, new STRtree<ShapeLocationInFileInfo>(), new GeometryFactory(), false);
+            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path, 
+                new STRtree<ShapeLocationInFileInfo>(), 
+                GeometryFactory.Default, 
+                false, 
+                Shapefile.DefaultEncoding);
 
             // Assert.
             Assert.IsNotNull(m_shapeDataReader);

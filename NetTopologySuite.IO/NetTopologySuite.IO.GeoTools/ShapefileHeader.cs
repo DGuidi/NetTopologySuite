@@ -11,7 +11,7 @@ namespace NetTopologySuite.IO
 	/// </summary>
 	public class ShapefileHeader
 	{
-		private int _fileCode = Shapefile.ShapefileId;
+		private readonly int _fileCode = Shapefile.ShapefileId;
 		private int _fileLength = -1;
 		private int _version = 1000;
         private ShapeGeometryType _shapeType = ShapeGeometryType.NullShape;
@@ -21,39 +21,39 @@ namespace NetTopologySuite.IO
 		/// Initializes a new instance of the ShapefileHeader class with values read in from the stream.
 		/// </summary>
 		/// <remarks>Reads the header information from the stream.</remarks>
-		/// <param name="shpBinaryReader">BigEndianBinaryReader stream to the shapefile.</param>
-		public ShapefileHeader(BigEndianBinaryReader shpBinaryReader)
+		/// <param name="reader">BigEndianBinaryReader stream to the shapefile.</param>
+		public ShapefileHeader(BigEndianBinaryReader reader)
 		{
-			if (shpBinaryReader == null)
-				throw new ArgumentNullException("shpBinaryReader");
+			if (reader == null)
+				throw new ArgumentNullException("reader");
 
-			_fileCode = shpBinaryReader.ReadInt32BE();	
+			_fileCode = reader.ReadInt32BE();	
 			if (_fileCode != Shapefile.ShapefileId)
 				throw new ShapefileException("The first four bytes of this file indicate this is not a shape file.");
 
 			// skip 5 unsed bytes
-			shpBinaryReader.ReadInt32BE();
-			shpBinaryReader.ReadInt32BE();
-			shpBinaryReader.ReadInt32BE();
-			shpBinaryReader.ReadInt32BE();
-			shpBinaryReader.ReadInt32BE();
+			reader.ReadInt32BE();
+			reader.ReadInt32BE();
+			reader.ReadInt32BE();
+			reader.ReadInt32BE();
+			reader.ReadInt32BE();
 
-			_fileLength = shpBinaryReader.ReadInt32BE();
+			_fileLength = reader.ReadInt32BE();
 
-			_version = shpBinaryReader.ReadInt32();
+			_version = reader.ReadInt32();
 			Debug.Assert(_version == 1000, "Shapefile version", String.Format("Expecting only one version (1000), but got {0}",_version));
-			int shapeType = shpBinaryReader.ReadInt32();
+			int shapeType = reader.ReadInt32();
             _shapeType = (ShapeGeometryType) EnumUtility.Parse(typeof(ShapeGeometryType), shapeType.ToString());
 
 			//read in and store the bounding box
 			double[] coords = new double[4];
 			for (int i = 0; i < 4; i++)
-				coords[i] = shpBinaryReader.ReadDouble();
+				coords[i] = reader.ReadDouble();
 			_bounds = new Envelope(coords[0], coords[2], coords[1], coords[3]);
 			
 			// skip z and m bounding boxes.
 			for (int i = 0; i < 4; i++)
-				shpBinaryReader.ReadDouble();	
+				reader.ReadDouble();	
 		}
 
 		/// <summary>
@@ -66,14 +66,8 @@ namespace NetTopologySuite.IO
 		/// </summary>
 		public Envelope Bounds
 		{
-			get
-			{
-				return _bounds;
-			}
-			set
-			{
-				_bounds = value;
-			}
+			get { return _bounds; }
+			set { _bounds = value; }
 		}
 
 		/// <summary>
@@ -81,14 +75,8 @@ namespace NetTopologySuite.IO
 		/// </summary>
         public ShapeGeometryType ShapeType
 		{
-			get
-			{
-				return _shapeType;
-			}
-			set
-			{
-				_shapeType = value;
-			}
+			get { return _shapeType; }
+			set { _shapeType = value; }
 		}
 
 		/// <summary>
@@ -96,14 +84,8 @@ namespace NetTopologySuite.IO
 		/// </summary>
 		public int Version
 		{
-			get
-			{
-				return _version;
-			}
-			set
-			{
-				_version = value;
-			}
+			get { return _version; }
+			set { _version = value; }
 		}
 
 		/// <summary>
@@ -111,14 +93,8 @@ namespace NetTopologySuite.IO
 		/// </summary>
 		public int FileLength
 		{
-			get
-			{
-				return _fileLength;
-			}
-			set
-			{
-				_fileLength = value;
-			}
+			get { return _fileLength; }
+			set { _fileLength = value; }
 		}
 
 		/// <summary>

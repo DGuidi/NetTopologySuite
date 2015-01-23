@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Handlers;
@@ -10,6 +11,11 @@ namespace NetTopologySuite.IO
     /// </summary>
     public partial class Shapefile
     {
+        public static Encoding DefaultEncoding
+        {
+            get { return Encoding.GetEncoding(1252); }
+        }
+
         internal const int ShapefileId = 9994;
         internal const int Version = 1000;
 

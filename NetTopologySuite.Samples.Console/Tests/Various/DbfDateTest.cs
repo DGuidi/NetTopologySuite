@@ -29,8 +29,8 @@ namespace NetTopologySuite.Samples.Tests.Various
 
             if (!File.Exists(file))
                 throw new FileNotFoundException("file not found at " + Path.GetDirectoryName(file));
-            
-            DbaseFileReader reader = new DbaseFileReader(file);
+
+            DbaseFileReader reader = new DbaseFileReader(file, Shapefile.DefaultEncoding);
             DbaseFileHeader header = reader.GetHeader();
             IEnumerator ienum = reader.GetEnumerator();
             ienum.MoveNext();            

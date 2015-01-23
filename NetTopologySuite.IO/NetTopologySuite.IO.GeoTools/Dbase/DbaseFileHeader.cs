@@ -122,17 +122,12 @@ namespace NetTopologySuite.IO
         /// <summary>
         /// Initializes a new instance of the DbaseFileHeader class.
         /// </summary>
-        public DbaseFileHeader()
-            : this(Encoding.GetEncoding(1252)) { }
-
-        /// <summary>
-        /// Initializes a new instance of the DbaseFileHeader class.
-        /// </summary>
-        public DbaseFileHeader(Encoding enc)
+        public DbaseFileHeader(Encoding encoding)
         {
-            if (enc == null)
-                throw new ArgumentNullException("enc");
-            _encoding = enc;
+            if (encoding == null)
+                throw new ArgumentNullException("encoding");
+
+            _encoding = encoding;
             _fieldDescriptions = new DbaseFieldDescriptor[0];
         }
 

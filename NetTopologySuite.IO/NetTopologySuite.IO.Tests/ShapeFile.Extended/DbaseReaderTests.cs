@@ -23,7 +23,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public void Ctor_SendNullPath_ShouldThrowException()
         {
             // Act.
-            m_Reader = new DbaseReader(null);
+            m_Reader = new DbaseReader(null, Shapefile.DefaultEncoding);
         }
 
         [Test]
@@ -31,7 +31,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public void Ctor_SendEmptyString_ShouldThrowException()
         {
             // Act.
-            m_Reader = new DbaseReader(string.Empty);
+            m_Reader = new DbaseReader(string.Empty, Shapefile.DefaultEncoding);
         }
 
         [Test]
@@ -39,7 +39,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public void Ctor_SendWhitespaceString_ShouldThrowException()
         {
             // Act.
-            m_Reader = new DbaseReader("    \t  ");
+            m_Reader = new DbaseReader("    \t  ", Shapefile.DefaultEncoding);
         }
 
         [Test]
@@ -47,7 +47,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public void Ctor_SendNonExistantPath_ShouldThrowException()
         {
             // Act.
-            m_Reader = new DbaseReader(@"C:\this\is\sheker\path\should\never\exist\on\ur\pc");
+            m_Reader = new DbaseReader(@"C:\this\is\sheker\path\should\never\exist\on\ur\pc", Shapefile.DefaultEncoding);
         }
 
         [Test]
@@ -57,7 +57,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             m_TmpFile = new TempFileWriter("data.dbf", DbfFiles.Read("line_ed50_geo"));
 
             // Act.
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbaseReader(m_TmpFile.Path, Shapefile.DefaultEncoding);
 
             // Assert.
             Assert.IsNotNull(m_Reader);
@@ -69,7 +69,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter("data.dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbaseReader(m_TmpFile.Path, Shapefile.DefaultEncoding);
 
             // Act.
             m_Reader.ReadEntry(-1);
@@ -81,7 +81,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter("data.dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbaseReader(m_TmpFile.Path, Shapefile.DefaultEncoding);
 
             // Act.
             m_Reader.ReadEntry(3);
@@ -93,7 +93,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter("data.dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbaseReader(m_TmpFile.Path, Shapefile.DefaultEncoding);
 
             m_Reader.Dispose();
 
@@ -106,7 +106,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter("data.dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbaseReader(m_TmpFile.Path, Shapefile.DefaultEncoding);
 
             var expectedTable = new
             {
@@ -174,7 +174,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter("data.dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbaseReader(m_TmpFile.Path, Shapefile.DefaultEncoding);
 
             IAttributesTable results = m_Reader.ReadEntry(0);
 
@@ -187,7 +187,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter("data.dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbaseReader(m_TmpFile.Path, Shapefile.DefaultEncoding);
 
             var expectedTable = new
             {

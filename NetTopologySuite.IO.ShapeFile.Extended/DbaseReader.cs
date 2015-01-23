@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using NetTopologySuite.Features;
 
 namespace NetTopologySuite.IO.ShapeFile.Extended
@@ -11,21 +12,21 @@ namespace NetTopologySuite.IO.ShapeFile.Extended
 	{
 		private DbaseFileHeader m_Header = null;
 		private readonly string m_Filename;
-		private BinaryReader m_FileReader;
+        private readonly Encoding _encoding;
+        private BinaryReader m_FileReader;
         private bool m_IsDisposed;
 
 		/// <summary>
 		/// Initializes a new instance of the DbaseFileReader class.
 		/// </summary>
-		/// <param name="filename"></param>
-		public DbaseReader(string filename)
+		public DbaseReader(string filename, Encoding encoding)
 		{
-			if (string.IsNullOrWhiteSpace(filename))
-			{
-				throw new ArgumentNullException(filename);
-			}
+		    if (encoding == null) 
+                throw new ArgumentNullException("encoding");
+		    if (string.IsNullOrWhiteSpace(filename))
+		        throw new ArgumentNullException(filename);
 
-			// check for the file existing here, otherwise we will not get an error
+		    // check for the file existing here, otherwise we will not get an error
 			// until we read the first record or read the header.
 			if (!File.Exists(filename))
 			{
@@ -33,8 +34,9 @@ namespace NetTopologySuite.IO.ShapeFile.Extended
 			}
 
 			m_Filename = filename;
+		    _encoding = encoding;
 
-			ReadHeader();
+		    ReadHeader();
 		}
 
 		~DbaseReader()
@@ -100,7 +102,7 @@ namespace NetTopologySuite.IO.ShapeFile.Extended
 
 		internal DbaseReader Clone()
 		{
-			return new DbaseReader(m_Filename);
+			return new DbaseReader(m_Filename, _encoding);
 		}
 
 		/// <summary>
@@ -114,7 +116,7 @@ namespace NetTopologySuite.IO.ShapeFile.Extended
 				FileStream stream = new FileStream(m_Filename, FileMode.Open, FileAccess.Read, FileShare.Read);
 				m_FileReader = new BinaryReader(stream);
 
-				m_Header = new DbaseFileHeader();
+				m_Header = new DbaseFileHeader(_encoding);
 
 				// read the header
 				m_Header.ReadHeader(m_FileReader, m_Filename);

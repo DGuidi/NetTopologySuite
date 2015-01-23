@@ -13,7 +13,7 @@ namespace NetTopologySuite.Tests.IO
         public void Setup()
         {
             ShapefileDataWriter sfdr = new ShapefileDataWriter("encoding_sample");
-            DbaseFileHeader h = new DbaseFileHeader();
+            DbaseFileHeader h = new DbaseFileHeader(Shapefile.DefaultEncoding);
             h.AddColumn("id", 'n', 8, 0);
             h.AddColumn("Test", 'C', 15, 0);
             h.AddColumn("Ålder", 'N', 8, 0);

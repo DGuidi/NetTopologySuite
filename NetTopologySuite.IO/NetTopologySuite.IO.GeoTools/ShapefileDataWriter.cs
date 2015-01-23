@@ -14,20 +14,34 @@ namespace NetTopologySuite.IO
     /// </summary>
     public class ShapefileDataWriter
     {
-
-        #region Static
-
         /// <summary>
-        /// Gets the stub header.
+        /// Creates a stub header.
         /// </summary>
-        /// <param name="feature">The feature.</param>
-        /// <param name="count">The count.</param>
-        /// <returns></returns>
+        /// <param name="feature">The <see cref="IFeature"/> to use as schema.</param>
+        /// <param name="count">Number of features to write.</param>
+        /// <returns>The <see cref="DbaseFileHeader"/>.</returns>
         public static DbaseFileHeader GetHeader(IFeature feature, int count)
         {
+            return GetHeader(feature, count, Shapefile.DefaultEncoding);
+        }
+
+        /// <summary>
+        /// Creates a stub header.
+        /// </summary>
+        /// <param name="feature">The <see cref="IFeature"/> to use as schema.</param>
+        /// <param name="count">Number of features to write.</param>
+        /// <param name="encoding">The <see cref="System.Text.Encoding"/> to use.</param>
+        /// <returns>The <see cref="DbaseFileHeader"/>.</returns>
+        public static DbaseFileHeader GetHeader(IFeature feature, int count, Encoding encoding)
+        {
+            if (feature == null) 
+                throw new ArgumentNullException("feature");
+            if (encoding == null) 
+                throw new ArgumentNullException("encoding");
+
             IAttributesTable attribs = feature.Attributes;
             string[] names = attribs.GetNames();
-            DbaseFileHeader header = new DbaseFileHeader();
+            DbaseFileHeader header = new DbaseFileHeader(encoding);
             header.NumRecords = count;
             foreach (string name in names)
             {
@@ -50,31 +64,66 @@ namespace NetTopologySuite.IO
         }
 
         /// <summary>
-        /// Gets the header from a dbf file.
+        /// Reads the header from a dbf file.
         /// </summary>
         /// <param name="dbfFile">The DBF file.</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="DbaseFileHeader"/>.</returns>
         public static DbaseFileHeader GetHeader(string dbfFile)
         {
+            return GetHeader(dbfFile, Shapefile.DefaultEncoding);    
+        }
+
+        /// <summary>
+        /// Reads the header from a dbf file.
+        /// </summary>
+        /// <param name="dbfFile">The DBF file.</param>
+        /// <param name="encoding">The <see cref="System.Text.Encoding"/> to use.</param>
+        /// <returns>The <see cref="DbaseFileHeader"/>.</returns>
+        public static DbaseFileHeader GetHeader(string dbfFile, Encoding encoding)
+        {            
+            if (String.IsNullOrEmpty(dbfFile))
+                throw new ArgumentNullException("dbfFile");
+            if (encoding == null) 
+                throw new ArgumentNullException("encoding");
             if (!File.Exists(dbfFile))
                 throw new FileNotFoundException(dbfFile + " not found");
-            DbaseFileHeader header = new DbaseFileHeader();
+
+            DbaseFileHeader header = new DbaseFileHeader(encoding);
             header.ReadHeader(new BinaryReader(new FileStream(dbfFile, FileMode.Open, FileAccess.Read, FileShare.Read)), dbfFile);
             return header;
         }
 
+        /// <summary>
+        /// Creates an header from an array of <see cref="DbaseFieldDescriptor"/>s.
+        /// </summary>
+        /// <param name="dbFields">The <see cref="IFeature"/> to use as schema.</param>
+        /// <param name="count">Number of features to write.</param>
+        /// <returns>the <see cref="DbaseFileHeader"/>.</returns>
         public static DbaseFileHeader GetHeader(DbaseFieldDescriptor[] dbFields, int count)
         {
-            DbaseFileHeader header = new DbaseFileHeader();
-            header.NumRecords = count;
-
-            foreach (DbaseFieldDescriptor dbField in dbFields)
-                header.AddColumn(dbField.Name, dbField.DbaseType, dbField.Length, dbField.DecimalCount);
-
-            return header;
+            return GetHeader(dbFields, count, Shapefile.DefaultEncoding);    
         }
 
-        #endregion
+        /// <summary>
+        /// Creates an header from an array of <see cref="DbaseFieldDescriptor"/>s.
+        /// </summary>
+        /// <param name="dbFields">The <see cref="IFeature"/> to use as schema.</param>
+        /// <param name="count">Number of features to write.</param>
+        /// <param name="encoding">The <see cref="System.Text.Encoding"/> to use.</param>
+        /// <returns>the <see cref="DbaseFileHeader"/>.</returns>
+        public static DbaseFileHeader GetHeader(DbaseFieldDescriptor[] dbFields, int count, Encoding encoding)
+        {
+            if (dbFields == null) 
+                throw new ArgumentNullException("dbFields");
+            if (encoding == null) 
+                throw new ArgumentNullException("encoding");
+
+            DbaseFileHeader header = new DbaseFileHeader(encoding);
+            header.NumRecords = count;
+            foreach (DbaseFieldDescriptor dbField in dbFields)
+                header.AddColumn(dbField.Name, dbField.DbaseType, dbField.Length, dbField.DecimalCount);
+            return header;
+        }
 
         private const int DoubleLength = 18;
         private const int DoubleDecimals = 8;
@@ -105,11 +154,11 @@ namespace NetTopologySuite.IO
         }
 
         private IGeometryFactory _geometryFactory;
+        private readonly Encoding _encoding;
 
         /// <summary>
         /// Gets or sets the geometry factory.
         /// </summary>
-        /// <value>The geometry factory.</value>
         protected IGeometryFactory GeometryFactory
         {
             get { return _geometryFactory; }
@@ -117,32 +166,50 @@ namespace NetTopologySuite.IO
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ShapefileDataWriter"/> class.
+        /// Gets the <see cref="Encoding"/>.
         /// </summary>
-        /// <param name="fileName">Name of the file with or without any extension.</param>
-        public ShapefileDataWriter(string fileName) : this(fileName, Geometries.GeometryFactory.Default) { }
+        public Encoding Encoding
+        {
+            get { return _encoding; }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShapefileDataWriter"/> class.
         /// </summary>
-        /// <param name="fileName">File path without any extension</param>
-        /// <param name="geometryFactory"></param>
-        public ShapefileDataWriter(string fileName, IGeometryFactory geometryFactory)
-            : this(fileName, geometryFactory, Encoding.GetEncoding(1252))
-        {
+        /// <param name="fileName">File path without any extension.</param>
+        public ShapefileDataWriter(string fileName) : 
+            this(fileName, Geometries.GeometryFactory.Default) { }
 
-        }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ShapefileDataWriter"/> class.
+        /// </summary>
+        /// <param name="fileName">File path without any extension.</param>
+        /// <param name="factory">The <see cref="IGeometryFactory"/> to use.</param>
+        public ShapefileDataWriter(string fileName, IGeometryFactory factory) :
+            this(fileName, factory, Shapefile.DefaultEncoding) { }
 
-        public ShapefileDataWriter(string fileName, IGeometryFactory geometryFactory, Encoding encoding)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ShapefileDataWriter"/> class.
+        /// </summary>
+        /// <param name="fileName">File path without any extension.</param>
+        /// <param name="factory">The <see cref="IGeometryFactory"/> to use.</param>
+        /// <param name="encoding">The <see cref="System.Text.Encoding"/> to use.</param>
+        public ShapefileDataWriter(string fileName, IGeometryFactory factory, Encoding encoding)
         {
-            _geometryFactory = geometryFactory;
+            if (factory == null) 
+                throw new ArgumentNullException("factory");
+            if (encoding == null) 
+                throw new ArgumentNullException("encoding");
+
+            _geometryFactory = factory;
+            _encoding = encoding;
 
             // Files            
             _shpFile = fileName;
             _dbfFile = fileName + ".dbf";
 
             // Writers
-            _dbaseWriter = new DbaseFileWriter(_dbfFile, encoding);
+            _dbaseWriter = new DbaseFileWriter(_dbfFile, _encoding);
         }
 
         /// <summary>
