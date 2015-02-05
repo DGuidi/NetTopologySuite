@@ -345,10 +345,10 @@ namespace NetTopologySuite.IO
             //in.skipBytes(20);
             byte[] data = reader.ReadBytes(20);
             byte lcid = data[29 - 12]; //get the 29th byte in the file... we've first to read into arry was no 12
-            _encoding = DetectEncodingFromMark(lcid, filename);
+            Encoding = DetectEncodingFromMark(lcid, filename, Encoding);
 
             //Replace reader with one with correct encoding..
-            reader = new BinaryReader(reader.BaseStream, _encoding);
+            reader = new BinaryReader(reader.BaseStream, Encoding);
             // calculate the number of Fields in the header
             _numFields = (_headerLength - FileDescriptorSize - 1) / FileDescriptorSize;
 
@@ -361,7 +361,7 @@ namespace NetTopologySuite.IO
                 // read the field name				
                 byte[] buffer = reader.ReadBytes(11);
                 // NOTE: only this _encoding.GetString method is available in Silverlight
-                String name = _encoding.GetString(buffer, 0, buffer.Length);
+                String name = Encoding.GetString(buffer, 0, buffer.Length);
                 int nullPoint = name.IndexOf((char)0);
                 if (nullPoint != -1)
                     name = name.Substring(0, nullPoint);
@@ -404,13 +404,16 @@ namespace NetTopologySuite.IO
         /// </summary>
         /// <param name="lcid">Language driver id</param>
         /// <param name="cpgFileName">Filename of code page file</param>
+        /// <param name="defaultEncoding">A <see cref="Encoding"/> to use as default if none found, or <c>null</c>.</param>
         /// <returns></returns>
-        private Encoding DetectEncodingFromMark(byte lcid, string cpgFileName)
+        private static Encoding DetectEncodingFromMark(byte lcid, string cpgFileName, Encoding defaultEncoding)
         {
             Encoding enc;
             if (LdidToEncoding.TryGetValue(lcid, out enc))
                 return enc;
-            enc = Encoding.UTF8;
+
+            enc = defaultEncoding ?? Shapefile.DefaultEncoding;
+
             if (String.IsNullOrEmpty(cpgFileName))
                 return enc;
             cpgFileName = Path.ChangeExtension(cpgFileName, "cpg");
@@ -418,9 +421,9 @@ namespace NetTopologySuite.IO
                 cpgFileName = Path.ChangeExtension(cpgFileName, "cst");
             if (!File.Exists(cpgFileName))
                 return enc;
+
             string encodingText = File.ReadAllText(cpgFileName).Trim();
-            try { return Encoding.GetEncoding(encodingText); }
-            catch { }
+            try { return Encoding.GetEncoding(encodingText); } catch { }
             return enc;
         }
 
@@ -467,7 +470,7 @@ namespace NetTopologySuite.IO
             byte[] data = new byte[20];
             for (int i = 0; i < 20; i++)
                 data[i] = 0;
-            data[29 - 12] = GetLCIDFromEncoding(_encoding);
+            data[29 - 12] = GetLCIDFromEncoding(Encoding);
             writer.Write(data);
 
             // write all of the header records
@@ -478,11 +481,11 @@ namespace NetTopologySuite.IO
                 string fieldName = _fieldDescriptions[i].Name;
 
                 // make sure the field name data length is not bigger than FieldNameMaxLength (11)
-                while (_encoding.GetByteCount(fieldName) > FieldNameMaxLength)
+                while (Encoding.GetByteCount(fieldName) > FieldNameMaxLength)
                     fieldName = fieldName.Substring(0, fieldName.Length - 1);
 
                 byte[] buffer = new byte[FieldNameMaxLength];
-                byte[] bytes = _encoding.GetBytes(fieldName);
+                byte[] bytes = Encoding.GetBytes(fieldName);
                 Array.Copy(bytes, buffer, bytes.Length);
                 writer.Write(buffer);
 

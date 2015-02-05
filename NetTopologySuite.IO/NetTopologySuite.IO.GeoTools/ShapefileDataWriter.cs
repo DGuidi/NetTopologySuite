@@ -209,7 +209,7 @@ namespace NetTopologySuite.IO
             _dbfFile = fileName + ".dbf";
 
             // Writers
-            _dbaseWriter = new DbaseFileWriter(_dbfFile, _encoding);
+            _dbaseWriter = new DbaseFileWriter(_dbfFile, Encoding);
         }
 
         /// <summary>
